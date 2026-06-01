@@ -31,6 +31,7 @@
   const modalImg = $("#modal-img");
   const modalClose = $("#modal-close");
   const toggleHover = $("#toggle-hover");
+  const toggleCompress = $("#toggle-compress");
   const btnSidebarToggle = $("#btn-sidebar-toggle");
   const sidebarEl = $(".sidebar");
   const sidebarOverlay = $("#sidebar-overlay");
@@ -39,6 +40,14 @@
   let hoverEnabled = true; // 开关
   let hoverTimer = null;   // 延迟显示定时器
   let justDragged = false; // 刚拖拽完的标记，防止误触弹窗
+
+  // ============ 弹窗缩放/拖拽状态 ============
+  let modalScale = 1;
+  let modalTx = 0, modalTy = 0;
+  let isDragging = false, dragMoved = false;
+  let dragStartX = 0, dragStartY = 0, dragBaseTx = 0, dragBaseTy = 0;
+  let pinchStartDist = 0, pinchStartScale = 1;
+  let longPressTimer = null, longPressFired = false;
 
   // ============ 初始化 ============
   async function init() {
@@ -117,12 +126,28 @@
 
     // 弹窗关闭
     modalClose.addEventListener("click", closeModal);
-    imageModal.addEventListener("click", (e) => {
-      if (e.target === imageModal) closeModal();
-    });
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeModal();
     });
+
+    // 弹窗点击空白关闭（区分拖拽）
+    imageModal.addEventListener("click", (e) => {
+      if (dragMoved) return;
+      if (e.target === imageModal || e.target === modalImg) closeModal();
+    });
+
+    // PC 鼠标拖拽
+    modalImg.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    // 弹窗滚轮缩放（PC）
+    imageModal.addEventListener("wheel", handleModalWheel, { passive: false });
+
+    // 移动端触摸事件
+    modalImg.addEventListener("touchstart", handleModalTouchStart, { passive: false });
+    window.addEventListener("touchmove", handleModalTouchMove, { passive: false });
+    window.addEventListener("touchend", handleModalTouchEnd);
 
     // 悬浮预览：事件委托在 imageGrid 上
     imageGrid.addEventListener("mouseover", handleGridMouseOver);
@@ -135,6 +160,9 @@
     // 移动端侧栏抽屉
     btnSidebarToggle.addEventListener("click", toggleSidebar);
     sidebarOverlay.addEventListener("click", closeSidebar);
+
+    // Ctrl+V 粘贴图片
+    document.addEventListener("paste", handlePaste);
   }
 
   // ============ 任务管理 ============
@@ -156,8 +184,8 @@
     }, 50);
   }
 
-  async function deleteTask() {
-    const task = getActiveTask();
+  async function deleteTask(taskId) {
+    const task = taskId ? tasks.find((t) => t.id === taskId) : getActiveTask();
     if (!task) return;
     if (!confirm(`确定删除任务「${task.name}」吗？`)) return;
 
@@ -187,6 +215,24 @@
     const files = [...e.target.files].filter((f) => f.type.startsWith("image/"));
     if (files.length > 0) addFiles(files);
     fileInput.value = ""; // 重置，允许重复选择同一文件
+  }
+
+  function handlePaste(e) {
+    if (!getActiveTask()) return;
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    const imageFiles = [];
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file) imageFiles.push(file);
+      }
+    }
+    if (imageFiles.length > 0) {
+      e.preventDefault();
+      addFiles(imageFiles);
+    }
   }
 
   function addFiles(files) {
@@ -267,8 +313,16 @@
       li.innerHTML = `
         <span class="task-name">${escapeHtml(task.name)}</span>
         <span class="task-count">${task.images.length} 张</span>
+        <span class="task-delete-btn" title="删除任务">&times;</span>
       `;
-      li.addEventListener("click", () => selectTask(task.id));
+      li.addEventListener("click", (e) => {
+        if (e.target.closest(".task-delete-btn")) {
+          e.stopPropagation();
+          deleteTask(task.id);
+        } else {
+          selectTask(task.id);
+        }
+      });
       taskListEl.appendChild(li);
     });
 
@@ -329,14 +383,13 @@
       animation: 200,
       ghostClass: "sortable-ghost",
       chosenClass: "sortable-chosen",
-      onEnd() {
+      onUpdate() {
         justDragged = true;
         setTimeout(() => { justDragged = false; }, 200);
 
         const task = getActiveTask();
         if (!task) return;
 
-        // 根据 DOM 顺序重建 images 数组
         const newOrder = [];
         imageGrid.querySelectorAll(".image-card").forEach((card) => {
           const imgId = card.dataset.imgId;
@@ -357,18 +410,23 @@
       animation: 200,
       ghostClass: "sortable-ghost",
       chosenClass: "sortable-chosen",
-      onEnd() {
-        // DOM 已被 SortableJS 移到正确位置，无需重建
-        const newTasks = [];
-        taskListEl.querySelectorAll("li").forEach((li) => {
-          const task = tasks.find((t) => t.id === li.dataset.taskId);
-          if (task) newTasks.push(task);
-        });
-        tasks = newTasks;
-        // 只持久化，不重建 DOM（避免移动端打断 SortableJS 回调）
-        Storage.saveTasks(tasks);
+      // 用 onUpdate 代替 onEnd：移动端 onEnd 在动画结束后才触发，
+      // 此时 DOM 可能已被 SortableJS 回退，导致读取到旧顺序
+      onUpdate() {
+        syncTaskOrder();
       },
     });
+  }
+
+  // 从 DOM 顺序同步任务数组并持久化（不重建 DOM）
+  function syncTaskOrder() {
+    const newTasks = [];
+    taskListEl.querySelectorAll("li").forEach((li) => {
+      const task = tasks.find((t) => t.id === li.dataset.taskId);
+      if (task) newTasks.push(task);
+    });
+    tasks = newTasks;
+    Storage.saveTasks(tasks);
   }
 
   // ============ 导出 ============
@@ -395,7 +453,8 @@
     document.body.appendChild(overlay);
 
     try {
-      await PdfExport.exportTask(task);
+      const compress = toggleCompress.checked;
+      await PdfExport.exportTask(task, { compress });
     } catch (err) {
       console.error("导出失败:", err);
       alert("导出失败，请查看控制台日志。");
@@ -526,12 +585,151 @@
     hideHoverPreview();
 
     modalImg.src = img.dataUrl;
+    resetModalZoom();
     imageModal.style.display = "flex";
   }
 
   function closeModal() {
     imageModal.style.display = "none";
     modalImg.src = "";
+    resetModalZoom();
+    clearTimeout(longPressTimer);
+  }
+
+  function resetModalZoom() {
+    modalScale = 1;
+    modalTx = 0;
+    modalTy = 0;
+    isDragging = false;
+    dragMoved = false;
+    applyModalTransform();
+    modalImg.style.cursor = "";
+  }
+
+  // ============ 弹窗缩放 + 拖拽 ============
+  function applyModalTransform() {
+    modalImg.style.transform = `translate(${modalTx}px, ${modalTy}px) scale(${modalScale})`;
+    modalImg.style.cursor = modalScale > 1 ? "grab" : "";
+  }
+
+  function clampTranslate() {
+    if (modalScale <= 1) { modalTx = 0; modalTy = 0; return; }
+    const rect = modalImg.getBoundingClientRect();
+    const imgW = rect.width / modalScale;
+    const imgH = rect.height / modalScale;
+    const maxTx = (imgW * (modalScale - 1)) / 2;
+    const maxTy = (imgH * (modalScale - 1)) / 2;
+    modalTx = Math.max(-maxTx, Math.min(modalTx, maxTx));
+    modalTy = Math.max(-maxTy, Math.min(modalTy, maxTy));
+  }
+
+  // --- PC 滚轮缩放 ---
+  function handleModalWheel(e) {
+    if (imageModal.style.display === "none") return;
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.15 : 0.15;
+    modalScale += delta;
+    modalScale = Math.max(1, Math.min(modalScale, 8));
+    clampTranslate();
+    applyModalTransform();
+  }
+
+  // --- PC 鼠标拖拽 ---
+  function handleMouseDown(e) {
+    if (modalScale <= 1) return;
+    e.preventDefault();
+    isDragging = true;
+    dragMoved = false;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    dragBaseTx = modalTx;
+    dragBaseTy = modalTy;
+    modalImg.style.cursor = "grabbing";
+  }
+
+  function handleMouseMove(e) {
+    if (!isDragging) return;
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved = true;
+    modalTx = dragBaseTx + dx;
+    modalTy = dragBaseTy + dy;
+    clampTranslate();
+    applyModalTransform();
+  }
+
+  function handleMouseUp() {
+    if (!isDragging) return;
+    isDragging = false;
+    modalImg.style.cursor = modalScale > 1 ? "grab" : "";
+    setTimeout(() => { dragMoved = false; }, 100);
+  }
+
+  // --- 移动端触摸：双指缩放 + 长按拖拽 ---
+  function getTouchDist(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function handleModalTouchStart(e) {
+    if (imageModal.style.display === "none") return;
+    if (e.touches.length === 2) {
+      if (e.cancelable) e.preventDefault();
+      clearTimeout(longPressTimer);
+      pinchStartDist = getTouchDist(e.touches);
+      pinchStartScale = modalScale;
+    } else if (e.touches.length === 1 && modalScale > 1) {
+      const touch = e.touches[0];
+      longPressFired = false;
+      clearTimeout(longPressTimer);
+      longPressTimer = setTimeout(() => {
+        longPressFired = true;
+        isDragging = true;
+        dragMoved = false;
+        dragStartX = touch.clientX;
+        dragStartY = touch.clientY;
+        dragBaseTx = modalTx;
+        dragBaseTy = modalTy;
+      }, 300);
+    }
+  }
+
+  function handleModalTouchMove(e) {
+    if (imageModal.style.display === "none") return;
+    if (e.touches.length === 2) {
+      if (e.cancelable) e.preventDefault();
+      clearTimeout(longPressTimer);
+      const dist = getTouchDist(e.touches);
+      modalScale = pinchStartScale * (dist / pinchStartDist);
+      modalScale = Math.max(1, Math.min(modalScale, 8));
+      clampTranslate();
+      applyModalTransform();
+    } else if (isDragging && e.touches.length === 1) {
+      if (e.cancelable) e.preventDefault();
+      const touch = e.touches[0];
+      const dx = touch.clientX - dragStartX;
+      const dy = touch.clientY - dragStartY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved = true;
+      modalTx = dragBaseTx + dx;
+      modalTy = dragBaseTy + dy;
+      clampTranslate();
+      applyModalTransform();
+    }
+  }
+
+  function handleModalTouchEnd(e) {
+    if (imageModal.style.display === "none") return;
+    clearTimeout(longPressTimer);
+    if (e.touches.length < 2) pinchStartDist = 0;
+    if (e.touches.length === 0) {
+      if (!longPressFired && !dragMoved) {
+        // 短按且未拖拽 → 关闭弹窗
+        closeModal();
+      }
+      isDragging = false;
+      dragMoved = false;
+    }
   }
 
   // ============ 启动 ============
