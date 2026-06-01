@@ -5,9 +5,12 @@
 ## ✨ 功能
 
 - 📷 **批量上传** — 支持一次选择多张图片（JPG / PNG / BMP / WEBP）
-- 🔀 **拖拽排序** — 自由调整每张图片在 PDF 中的页序
-- 📋 **多任务管理** — 同时创建多个任务，独立管理各自的图片列表
+- 🔀 **图片拖拽排序** — 自由调整每张图片在 PDF 中的页序
+- 📋 **多任务管理** — 同时创建多个任务，任务列表支持拖拽排序
+- 🔍 **悬浮预览** — 鼠标悬浮缩略图自动放大预览（可开关）
+- 🖼️ **原图查看** — 点击缩略图弹窗查看原图
 - ⬇️ **一键导出** — 按当前排序生成 A4 尺寸 PDF 并自动下载，文件名为任务名
+- 💾 **数据持久化** — 任务和图片数据自动保存，关闭浏览器后重新打开不丢失
 - 🔒 **隐私安全** — 所有处理在浏览器本地完成，图片不会上传到任何服务器
 
 ## 🚀 使用方式
@@ -32,18 +35,18 @@
 ## 📁 项目结构
 
 ```
-├── index.html          # 主页面
+├── index.html              # 主页面
 ├── css/
-│   └── style.css       # 样式
+│   └── style.css           # 样式
 ├── js/
-│   ├── app.js          # 主逻辑（任务管理、上传、排序）
-│   ├── pdf-export.js   # PDF 生成与下载
-│   └── storage.js      # localStorage 封装
+│   ├── app.js              # 主逻辑（任务管理、上传、排序、预览）
+│   ├── pdf-export.js       # PDF 生成与下载
+│   └── storage.js          # 数据持久化（localStorage + IndexedDB）
 ├── lib/
 │   ├── jspdf.umd.min.js    # jsPDF 库
 │   └── Sortable.min.js     # SortableJS 库
-├── setup.ps1           # PowerShell 依赖下载脚本
-├── 下载依赖库.bat       # Windows 一键下载脚本
+├── setup.ps1               # PowerShell 依赖下载脚本
+├── 下载依赖库.bat           # Windows 一键下载脚本
 └── README.md
 ```
 
@@ -51,12 +54,13 @@
 
 - **HTML / CSS / JavaScript** — 纯前端，零框架
 - **[jsPDF](https://github.com/parallax/jsPDF)** — 浏览器端 PDF 生成
-- **[SortableJS](https://github.com/SortableJS/Sortable)** — 拖拽排序
+- **[SortableJS](https://github.com/SortableJS/Sortable)** — 拖拽排序（图片列表 + 任务列表）
+- **IndexedDB** — 图片数据持久化存储
+- **localStorage** — 任务元数据存储
 
 ## ⚠️ 注意事项
 
-- 任务名称和图片顺序会保存在浏览器 localStorage 中，刷新页面不丢失
-- 图片数据不会持久化，刷新后需重新上传图片
+- 任务数据和图片自动持久化，关闭浏览器后重新打开不丢失
 - 单个任务最多 50 张图片，单张图片最大 20MB
 - 推荐使用 Chrome / Edge / Firefox 最新版本
 
