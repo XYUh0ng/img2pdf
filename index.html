@@ -16,6 +16,7 @@
   <div class="app">
     <!-- 顶栏 -->
     <header class="header">
+      <button id="btn-sidebar-toggle" class="btn-sidebar-toggle" aria-label="打开任务列表">☰</button>
       <h1>📄 图片转 PDF 工具</h1>
       <button id="btn-new-task" class="btn btn-primary">+ 新建任务</button>
     </header>
@@ -29,12 +30,14 @@
         </ul>
         <p id="no-task-hint" class="hint">暂无任务，点击右上角新建</p>
       </aside>
+      <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
       <!-- 右侧：任务编辑区 -->
       <section class="editor">
         <!-- 未选中任务时的占位 -->
         <div id="editor-empty" class="editor-empty">
-          <p>👈 请从左侧选择一个任务，或新建任务</p>
+          <p class="editor-empty-desktop">👈 请从左侧选择一个任务，或新建任务</p>
+          <p class="editor-empty-mobile">请点击 ☰ 打开任务列表，或新建任务</p>
         </div>
 
         <!-- 选中任务后的编辑界面 -->
@@ -58,7 +61,8 @@
           <!-- 上传区 -->
           <div id="upload-area" class="upload-area">
             <input id="file-input" type="file" multiple accept="image/*" hidden>
-            <p>📷 点击此处或拖拽图片到此区域上传</p>
+            <p class="upload-text-desktop">📷 点击此处或拖拽图片到此区域上传</p>
+            <p class="upload-text-mobile">📷 点击上传图片</p>
             <p class="hint">支持 JPG / PNG / BMP / WEBP，最多 50 张</p>
           </div>
         </div>
