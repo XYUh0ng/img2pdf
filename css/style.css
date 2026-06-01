@@ -116,6 +116,30 @@ body {
   white-space: nowrap;
 }
 
+.task-list .task-delete-btn {
+  display: none;
+  background: rgba(255, 77, 79, 0.85);
+  color: #fff;
+  border: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.task-list li:hover .task-delete-btn {
+  display: block;
+}
+
+.task-list li .task-delete-btn:active {
+  background: #ff4d4f;
+}
+
 .hint {
   color: #bbb;
   font-size: 13px;
@@ -295,7 +319,7 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  cursor: zoom-out;
+  overflow: hidden;
 }
 
 .image-modal img {
@@ -304,6 +328,10 @@ body {
   object-fit: contain;
   border-radius: 4px;
   cursor: default;
+  transition: transform 0.08s ease-out;
+  transform-origin: center center;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .modal-close {
@@ -508,6 +536,14 @@ body {
     padding: 12px;
     font-size: 15px;
     min-height: 44px;
+  }
+
+  .task-list .task-delete-btn {
+    display: block;
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+    line-height: 26px;
   }
 
   .sidebar-overlay {
