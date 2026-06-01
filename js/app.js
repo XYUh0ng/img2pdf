@@ -46,7 +46,7 @@
   let modalTx = 0, modalTy = 0;
   let isDragging = false, dragMoved = false;
   let dragStartX = 0, dragStartY = 0, dragBaseTx = 0, dragBaseTy = 0;
-  let pinchStartDist = 0, pinchStartScale = 1;
+  let pinchStartDist = 0, pinchStartScale = 1, isPinching = false;
   let longPressTimer = null, longPressFired = false;
 
   // ============ 初始化 ============
@@ -136,18 +136,14 @@
       if (e.target === imageModal || e.target === modalImg) closeModal();
     });
 
-    // PC 鼠标拖拽
+    // PC 鼠标拖拽（只绑定 mousedown，mousemove/mouseup 动态管理）
     modalImg.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
 
     // 弹窗滚轮缩放（PC）
     imageModal.addEventListener("wheel", handleModalWheel, { passive: false });
 
-    // 移动端触摸事件
+    // 移动端触摸事件（touchstart 绑定在图片上，touchmove/touchend 动态管理）
     modalImg.addEventListener("touchstart", handleModalTouchStart, { passive: false });
-    window.addEventListener("touchmove", handleModalTouchMove, { passive: false });
-    window.addEventListener("touchend", handleModalTouchEnd);
 
     // 悬浮预览：事件委托在 imageGrid 上
     imageGrid.addEventListener("mouseover", handleGridMouseOver);
@@ -594,6 +590,11 @@
     modalImg.src = "";
     resetModalZoom();
     clearTimeout(longPressTimer);
+    isPinching = false;
+    window.removeEventListener("mousemove", handleMouseMove);
+    window.removeEventListener("mouseup", handleMouseUp);
+    window.removeEventListener("touchmove", handleModalTouchMove);
+    window.removeEventListener("touchend", handleModalTouchEnd);
   }
 
   function resetModalZoom() {
@@ -634,9 +635,9 @@
     applyModalTransform();
   }
 
-  // --- PC 鼠标拖拽 ---
+  // --- PC 鼠标拖拽（动态绑定/解绑 window 监听器） ---
   function handleMouseDown(e) {
-    if (modalScale <= 1) return;
+    if (modalScale <= 1 || imageModal.style.display === "none") return;
     e.preventDefault();
     isDragging = true;
     dragMoved = false;
@@ -645,10 +646,11 @@
     dragBaseTx = modalTx;
     dragBaseTy = modalTy;
     modalImg.style.cursor = "grabbing";
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
   }
 
   function handleMouseMove(e) {
-    if (!isDragging) return;
     const dx = e.clientX - dragStartX;
     const dy = e.clientY - dragStartY;
     if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved = true;
@@ -659,13 +661,14 @@
   }
 
   function handleMouseUp() {
-    if (!isDragging) return;
     isDragging = false;
     modalImg.style.cursor = modalScale > 1 ? "grab" : "";
     setTimeout(() => { dragMoved = false; }, 100);
+    window.removeEventListener("mousemove", handleMouseMove);
+    window.removeEventListener("mouseup", handleMouseUp);
   }
 
-  // --- 移动端触摸：双指缩放 + 长按拖拽 ---
+  // --- 移动端触摸：双指缩放 + 长按拖拽（动态绑定/解绑） ---
   function getTouchDist(touches) {
     const dx = touches[0].clientX - touches[1].clientX;
     const dy = touches[0].clientY - touches[1].clientY;
@@ -677,13 +680,21 @@
     if (e.touches.length === 2) {
       if (e.cancelable) e.preventDefault();
       clearTimeout(longPressTimer);
+      isPinching = true;
       pinchStartDist = getTouchDist(e.touches);
       pinchStartScale = modalScale;
-    } else if (e.touches.length === 1 && modalScale > 1) {
+      // 拖拽中切到双指 → 取消拖拽
+      if (isDragging) {
+        isDragging = false;
+        window.removeEventListener("touchmove", handleModalTouchMove);
+        window.removeEventListener("touchend", handleModalTouchEnd);
+      }
+    } else if (e.touches.length === 1 && !isPinching) {
       const touch = e.touches[0];
       longPressFired = false;
       clearTimeout(longPressTimer);
       longPressTimer = setTimeout(() => {
+        if (modalScale <= 1) return;
         longPressFired = true;
         isDragging = true;
         dragMoved = false;
@@ -691,7 +702,12 @@
         dragStartY = touch.clientY;
         dragBaseTx = modalTx;
         dragBaseTy = modalTy;
+        window.addEventListener("touchmove", handleModalTouchMove, { passive: false });
+        window.addEventListener("touchend", handleModalTouchEnd);
       }, 300);
+      // 单指也绑 touchmove/touchend 处理双指中途加入的情况
+      window.addEventListener("touchmove", handleModalTouchMove, { passive: false });
+      window.addEventListener("touchend", handleModalTouchEnd);
     }
   }
 
@@ -700,6 +716,8 @@
     if (e.touches.length === 2) {
       if (e.cancelable) e.preventDefault();
       clearTimeout(longPressTimer);
+      isPinching = true;
+      isDragging = false;
       const dist = getTouchDist(e.touches);
       modalScale = pinchStartScale * (dist / pinchStartDist);
       modalScale = Math.max(1, Math.min(modalScale, 8));
@@ -721,14 +739,19 @@
   function handleModalTouchEnd(e) {
     if (imageModal.style.display === "none") return;
     clearTimeout(longPressTimer);
-    if (e.touches.length < 2) pinchStartDist = 0;
+    if (e.touches.length < 2) {
+      isPinching = false;
+      pinchStartDist = 0;
+    }
     if (e.touches.length === 0) {
-      if (!longPressFired && !dragMoved) {
-        // 短按且未拖拽 → 关闭弹窗
+      // 只有非拖拽、非缩放的短按才关闭弹窗
+      if (!isPinching && !longPressFired && !dragMoved) {
         closeModal();
       }
       isDragging = false;
       dragMoved = false;
+      window.removeEventListener("touchmove", handleModalTouchMove);
+      window.removeEventListener("touchend", handleModalTouchEnd);
     }
   }
 
