@@ -1,0 +1,65 @@
+# 📄 图片转 PDF 工具
+
+一个纯前端的图片批量合并为 PDF 的小工具，浏览器端完成所有处理，无需后端服务，开箱即用。
+
+## ✨ 功能
+
+- 📷 **批量上传** — 支持一次选择多张图片（JPG / PNG / BMP / WEBP）
+- 🔀 **拖拽排序** — 自由调整每张图片在 PDF 中的页序
+- 📋 **多任务管理** — 同时创建多个任务，独立管理各自的图片列表
+- ⬇️ **一键导出** — 按当前排序生成 A4 尺寸 PDF 并自动下载，文件名为任务名
+- 🔒 **隐私安全** — 所有处理在浏览器本地完成，图片不会上传到任何服务器
+
+## 🚀 使用方式
+
+### 方式一：直接使用（推荐）
+
+1. 下载本项目并解压
+2. 双击运行 `下载依赖库.bat`，自动下载所需的 jsPDF 和 SortableJS 库
+3. 用浏览器打开 `index.html` 即可使用
+
+### 方式二：手动下载依赖
+
+如果 bat 脚本无法运行，手动下载以下两个文件，放到 `lib/` 目录下：
+
+| 文件 | 下载地址 |
+|------|---------|
+| `jspdf.umd.min.js` | https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js |
+| `Sortable.min.js` | https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js |
+
+然后用浏览器打开 `index.html`。
+
+## 📁 项目结构
+
+```
+├── index.html          # 主页面
+├── css/
+│   └── style.css       # 样式
+├── js/
+│   ├── app.js          # 主逻辑（任务管理、上传、排序）
+│   ├── pdf-export.js   # PDF 生成与下载
+│   └── storage.js      # localStorage 封装
+├── lib/
+│   ├── jspdf.umd.min.js    # jsPDF 库
+│   └── Sortable.min.js     # SortableJS 库
+├── setup.ps1           # PowerShell 依赖下载脚本
+├── 下载依赖库.bat       # Windows 一键下载脚本
+└── README.md
+```
+
+## 🛠️ 技术栈
+
+- **HTML / CSS / JavaScript** — 纯前端，零框架
+- **[jsPDF](https://github.com/parallax/jsPDF)** — 浏览器端 PDF 生成
+- **[SortableJS](https://github.com/SortableJS/Sortable)** — 拖拽排序
+
+## ⚠️ 注意事项
+
+- 任务名称和图片顺序会保存在浏览器 localStorage 中，刷新页面不丢失
+- 图片数据不会持久化，刷新后需重新上传图片
+- 单个任务最多 50 张图片，单张图片最大 20MB
+- 推荐使用 Chrome / Edge / Firefox 最新版本
+
+## 📄 License
+
+[MIT](LICENSE)

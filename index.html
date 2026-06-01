@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片转 PDF 工具</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- jsPDF（本地优先，CDN 兜底） -->
+  <script src="lib/jspdf.umd.min.js"></script>
+  <script>if(!window.jspdf) document.write('<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"><\/script>')</script>
+  <!-- SortableJS（本地优先，CDN 兜底） -->
+  <script src="lib/Sortable.min.js"></script>
+  <script>if(typeof Sortable==='undefined') document.write('<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"><\/script>')</script>
+</head>
+<body>
+  <div class="app">
+    <!-- 顶栏 -->
+    <header class="header">
+      <h1>📄 图片转 PDF 工具</h1>
+      <button id="btn-new-task" class="btn btn-primary">+ 新建任务</button>
+    </header>
+
+    <div class="main">
+      <!-- 左侧：任务列表 -->
+      <aside class="sidebar">
+        <h2>任务列表</h2>
+        <ul id="task-list" class="task-list">
+          <!-- 动态生成 -->
+        </ul>
+        <p id="no-task-hint" class="hint">暂无任务，点击右上角新建</p>
+      </aside>
+
+      <!-- 右侧：任务编辑区 -->
+      <section class="editor">
+        <!-- 未选中任务时的占位 -->
+        <div id="editor-empty" class="editor-empty">
+          <p>👈 请从左侧选择一个任务，或新建任务</p>
+        </div>
+
+        <!-- 选中任务后的编辑界面 -->
+        <div id="editor-panel" class="editor-panel" style="display:none;">
+          <div class="editor-header">
+            <input id="task-name-input" type="text" class="task-name-input" placeholder="请输入任务名称">
+            <label class="toggle-label" title="鼠标悬浮缩略图时显示放大预览">
+              <input id="toggle-hover" type="checkbox" checked>
+              <span class="toggle-switch"></span>
+              <span class="toggle-text">悬浮预览</span>
+            </label>
+            <button id="btn-export" class="btn btn-success">⬇ 导出 PDF</button>
+            <button id="btn-delete-task" class="btn btn-danger">🗑 删除任务</button>
+          </div>
+
+          <!-- 图片网格 -->
+          <div id="image-grid" class="image-grid">
+            <!-- 动态生成 -->
+          </div>
+
+          <!-- 上传区 -->
+          <div id="upload-area" class="upload-area">
+            <input id="file-input" type="file" multiple accept="image/*" hidden>
+            <p>📷 点击此处或拖拽图片到此区域上传</p>
+            <p class="hint">支持 JPG / PNG / BMP / WEBP，最多 50 张</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- 悬浮预览 -->
+  <div id="hover-preview" class="hover-preview" style="display:none;">
+    <img id="hover-preview-img" src="" alt="">
+  </div>
+
+  <!-- 点击弹窗查看原图 -->
+  <div id="image-modal" class="image-modal" style="display:none;">
+    <button id="modal-close" class="modal-close">&times;</button>
+    <img id="modal-img" src="" alt="">
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/pdf-export.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

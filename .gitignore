@@ -1,0 +1,13 @@
+# 系统文件
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# 编辑器
+.vscode/
+.idea/
+
+# 需求/设计文档（内部文档，不提交）
+需求文档.md
+设计方案.md
+GitHub开源教程.md
