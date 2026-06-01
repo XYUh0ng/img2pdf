@@ -358,13 +358,15 @@
       ghostClass: "sortable-ghost",
       chosenClass: "sortable-chosen",
       onEnd() {
+        // DOM 已被 SortableJS 移到正确位置，无需重建
         const newTasks = [];
         taskListEl.querySelectorAll("li").forEach((li) => {
           const task = tasks.find((t) => t.id === li.dataset.taskId);
           if (task) newTasks.push(task);
         });
         tasks = newTasks;
-        saveAndRenderList();
+        // 只持久化，不重建 DOM（避免移动端打断 SortableJS 回调）
+        Storage.saveTasks(tasks);
       },
     });
   }
