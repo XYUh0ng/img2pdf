@@ -31,6 +31,9 @@
   const modalImg = $("#modal-img");
   const modalClose = $("#modal-close");
   const toggleHover = $("#toggle-hover");
+  const btnSidebarToggle = $("#btn-sidebar-toggle");
+  const sidebarEl = $(".sidebar");
+  const sidebarOverlay = $("#sidebar-overlay");
 
   // ============ 悬浮预览状态 ============
   let hoverEnabled = true; // 开关
@@ -128,6 +131,10 @@
 
     // 点击弹窗：事件委托在 imageGrid 上
     imageGrid.addEventListener("click", handleGridClick);
+
+    // 移动端侧栏抽屉
+    btnSidebarToggle.addEventListener("click", toggleSidebar);
+    sidebarOverlay.addEventListener("click", closeSidebar);
   }
 
   // ============ 任务管理 ============
@@ -168,6 +175,7 @@
     activeTaskId = taskId;
     renderTaskList();
     renderEditor();
+    closeSidebar(); // 移动端选择任务后自动关闭侧栏
   }
 
   function getActiveTask() {
@@ -406,9 +414,29 @@
     return div.innerHTML;
   }
 
+  // ============ 移动端侧栏 ============
+  function isMobile() {
+    return window.innerWidth <= 768;
+  }
+
+  function toggleSidebar() {
+    sidebarEl.classList.toggle("open");
+    sidebarOverlay.classList.toggle("open");
+  }
+
+  function openSidebar() {
+    sidebarEl.classList.add("open");
+    sidebarOverlay.classList.add("open");
+  }
+
+  function closeSidebar() {
+    sidebarEl.classList.remove("open");
+    sidebarOverlay.classList.remove("open");
+  }
+
   // ============ 悬浮预览 ============
   function handleGridMouseOver(e) {
-    if (!hoverEnabled) return;
+    if (!hoverEnabled || isMobile()) return;
     const card = e.target.closest(".image-card");
     if (!card || card.classList.contains("sortable-chosen")) return;
     const imgId = card.dataset.imgId;
@@ -437,7 +465,7 @@
   }
 
   function handleGridMouseMove(e) {
-    if (!hoverEnabled || hoverPreview.style.display === "none") return;
+    if (!hoverEnabled || isMobile() || hoverPreview.style.display === "none") return;
     positionHoverPreview(e);
   }
 

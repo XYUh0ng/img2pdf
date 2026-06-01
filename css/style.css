@@ -413,3 +413,222 @@ body {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ========== 桌面端隐藏移动端元素 ========== */
+.btn-sidebar-toggle {
+  display: none;
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+.editor-empty-mobile {
+  display: none;
+}
+
+.upload-text-mobile {
+  display: none;
+}
+
+/* ========================================================
+   移动端适配 (≤ 768px)
+   ======================================================== */
+@media (max-width: 768px) {
+
+  /* ----- 顶栏 ----- */
+  .header {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .header h1 {
+    font-size: 15px;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .btn-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: none;
+    font-size: 22px;
+    cursor: pointer;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+
+  .btn-sidebar-toggle:active {
+    background: #f0f0f0;
+  }
+
+  .btn {
+    padding: 8px 12px;
+    font-size: 13px;
+    min-height: 40px;
+  }
+
+  /* ----- 主布局 ----- */
+  .main {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - 56px);
+  }
+
+  /* ----- 侧栏抽屉 ----- */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100vh;
+    z-index: 210;
+    transition: left 0.3s ease;
+    padding-top: 56px;
+    box-shadow: none;
+  }
+
+  .sidebar.open {
+    left: 0;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .sidebar h2 {
+    font-size: 15px;
+  }
+
+  .task-list li {
+    padding: 12px;
+    font-size: 15px;
+    min-height: 44px;
+  }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 200;
+  }
+
+  .sidebar-overlay.open {
+    display: block;
+  }
+
+  /* ----- 编辑区 ----- */
+  .editor {
+    padding: 12px;
+    overflow-y: visible;
+  }
+
+  .editor-empty {
+    font-size: 14px;
+  }
+
+  .editor-empty-desktop {
+    display: none;
+  }
+
+  .editor-empty-mobile {
+    display: block;
+  }
+
+  /* ----- 工具栏 ----- */
+  .editor-header {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .task-name-input {
+    width: 100%;
+    flex: none;
+    font-size: 15px;
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+
+  .toggle-label {
+    order: 4;
+  }
+
+  .btn-export {
+    order: 3;
+  }
+
+  .btn-delete-task {
+    order: 5;
+  }
+
+  /* ----- 图片网格 ----- */
+  .image-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .image-card img {
+    height: 120px;
+  }
+
+  .image-card .card-remove {
+    opacity: 1;
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+    line-height: 26px;
+  }
+
+  .image-card .card-name {
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+
+  /* ----- 上传区 ----- */
+  .upload-area {
+    padding: 24px 16px;
+    min-height: 80px;
+  }
+
+  .upload-area p {
+    font-size: 13px;
+  }
+
+  .upload-text-desktop {
+    display: none;
+  }
+
+  .upload-text-mobile {
+    display: block;
+  }
+
+  /* ----- 悬浮预览（移动端禁用） ----- */
+  .hover-preview {
+    display: none !important;
+  }
+
+  /* ----- 原图弹窗 ----- */
+  .image-modal img {
+    max-width: 96vw;
+    max-height: 85vh;
+  }
+
+  .modal-close {
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    font-size: 28px;
+    line-height: 40px;
+  }
+}
