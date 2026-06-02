@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.3.2 (2026-06-02)
+
+### 🐛 Bug 修复
+
+- **移动端侧边栏拖拽死锁**：修复 initTaskListSortable 未销毁旧实例导致多个 Sortable 监听器叠加，touchmove 手势死锁
+- **弹窗触摸事件泄漏**：新增 touchcancel 处理，修复系统中断触摸（来电/通知）时 window 级监听器未清理
+
+### 📝 文档
+
+- 新增踩坑记录 docs/pitfalls/20260602-sortable-leak.md
+- README 新增 docs/ 目录说明与移动端拖拽修复提示
+
 ## v1.3.1 (2026-06-01)
 
 ### 🐛 Bug 修复
