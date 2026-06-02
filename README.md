@@ -47,6 +47,8 @@
 ├── lib/
 │   ├── jspdf.umd.min.js    # jsPDF 库
 │   └── Sortable.min.js     # SortableJS 库
+├── docs/
+│   └── pitfalls/           # 踩坑记录与排查文档
 ├── setup.ps1               # PowerShell 依赖下载脚本
 ├── 下载依赖库.bat           # Windows 一键下载脚本
 └── README.md
@@ -65,6 +67,7 @@
 - 任务数据和图片自动持久化，关闭浏览器后重新打开不丢失
 - 单个任务最多 50 张图片，单张图片最大 20MB
 - 推荐使用 Chrome / Edge / Firefox 最新版本
+- 移动端如遇拖拽卡死，请确保使用最新版本（v1.3.1+ 修复了 Sortable 实例泄漏问题）
 
 ## 📄 License
 
