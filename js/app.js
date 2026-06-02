@@ -38,29 +38,40 @@
 
   // ============ 悬浮预览状态 ============
   let hoverEnabled = true; // 开关
-  let hoverTimer = null;   // 延迟显示定时器
+  let hoverTimer = null; // 延迟显示定时器
   let justDragged = false; // 刚拖拽完的标记，防止误触弹窗
 
   // ============ 弹窗缩放/拖拽状态 ============
   let modalScale = 1;
-  let modalTx = 0, modalTy = 0;
-  let isDragging = false, dragMoved = false;
-  let dragStartX = 0, dragStartY = 0, dragBaseTx = 0, dragBaseTy = 0;
-  let pinchStartDist = 0, pinchStartScale = 1, isPinching = false;
-  let longPressTimer = null, longPressFired = false;
+  let modalTx = 0,
+    modalTy = 0;
+  let isDragging = false,
+    dragMoved = false;
+  let dragStartX = 0,
+    dragStartY = 0,
+    dragBaseTx = 0,
+    dragBaseTy = 0;
+  let pinchStartDist = 0,
+    pinchStartScale = 1,
+    isPinching = false;
+  let longPressTimer = null,
+    longPressFired = false;
 
   // ============ 初始化 ============
   async function init() {
     // 检测依赖库是否加载成功
     if (typeof window.jspdf === "undefined") {
-      document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#ff4d4f;font-size:18px;">' +
-        '<h2>⚠️ jsPDF 库加载失败</h2>' +
+      document.body.innerHTML =
+        '<div style="padding:40px;text-align:center;color:#ff4d4f;font-size:18px;">' +
+        "<h2>⚠️ jsPDF 库加载失败</h2>" +
         '<p style="margin-top:12px;color:#666;">请先运行 <b>setup.ps1</b> 下载依赖库，再刷新页面。</p>' +
         '<p style="color:#999;font-size:14px;">右键 setup.ps1 → 使用 PowerShell 运行</p></div>';
       return;
     }
     if (typeof Sortable === "undefined") {
-      console.warn("SortableJS 未加载，拖拽排序将不可用，可使用手动输入页码替代。");
+      console.warn(
+        "SortableJS 未加载，拖拽排序将不可用，可使用手动输入页码替代。",
+      );
     }
 
     // 从 localStorage 恢复任务元数据
@@ -114,7 +125,9 @@
     uploadArea.addEventListener("drop", (e) => {
       e.preventDefault();
       uploadArea.classList.remove("dragover");
-      const files = [...e.dataTransfer.files].filter((f) => f.type.startsWith("image/"));
+      const files = [...e.dataTransfer.files].filter((f) =>
+        f.type.startsWith("image/"),
+      );
       if (files.length > 0) addFiles(files);
     });
 
@@ -143,7 +156,9 @@
     imageModal.addEventListener("wheel", handleModalWheel, { passive: false });
 
     // 移动端触摸事件（touchstart 绑定在图片上，touchmove/touchend 动态管理）
-    modalImg.addEventListener("touchstart", handleModalTouchStart, { passive: false });
+    modalImg.addEventListener("touchstart", handleModalTouchStart, {
+      passive: false,
+    });
 
     // 悬浮预览：事件委托在 imageGrid 上
     imageGrid.addEventListener("mouseover", handleGridMouseOver);
@@ -208,7 +223,9 @@
 
   // ============ 图片上传 ============
   function handleFileSelect(e) {
-    const files = [...e.target.files].filter((f) => f.type.startsWith("image/"));
+    const files = [...e.target.files].filter((f) =>
+      f.type.startsWith("image/"),
+    );
     if (files.length > 0) addFiles(files);
     fileInput.value = ""; // 重置，允许重复选择同一文件
   }
@@ -260,7 +277,8 @@
 
       const reader = new FileReader();
       reader.onload = async (e) => {
-        const imgId = "img_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
+        const imgId =
+          "img_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
         const dataUrl = e.target.result;
         task.images.push({
           id: imgId,
@@ -381,7 +399,9 @@
       chosenClass: "sortable-chosen",
       onUpdate() {
         justDragged = true;
-        setTimeout(() => { justDragged = false; }, 200);
+        setTimeout(() => {
+          justDragged = false;
+        }, 200);
 
         const task = getActiveTask();
         if (!task) return;
@@ -400,8 +420,16 @@
     });
   }
 
+  /**
+   * ⚠️ 避坑警告 (2026-06-02 Fix):
+   * 为什么这里必须在新建实例前执行 taskListSortable.destroy()?
+   * 每次 renderTaskList() 触发时都会重复调用此函数。若不 destroy 旧实例，
+   * 多个 Sortable 监听器会叠加抢夺移动端的 touchmove 手势，导致拖拽行为彻底死锁！
+   * 详见项目根目录下的文档：/docs/pitfalls/20260602-sortable-leak.md
+   */
   function initTaskListSortable() {
     if (typeof Sortable === "undefined") return;
+    if (taskListSortable) taskListSortable.destroy();
     taskListSortable = new Sortable(taskListEl, {
       animation: 200,
       ghostClass: "sortable-ghost",
@@ -438,7 +466,9 @@
     // 检查是否有 dataUrl（刷新后可能丢失）
     const missing = task.images.filter((img) => !img.dataUrl);
     if (missing.length > 0) {
-      alert(`有 ${missing.length} 张图片数据丢失（页面曾刷新），请重新上传后再导出。`);
+      alert(
+        `有 ${missing.length} 张图片数据丢失（页面曾刷新），请重新上传后再导出。`,
+      );
       return;
     }
 
@@ -522,12 +552,13 @@
   }
 
   function handleGridMouseMove(e) {
-    if (!hoverEnabled || isMobile() || hoverPreview.style.display === "none") return;
+    if (!hoverEnabled || isMobile() || hoverPreview.style.display === "none")
+      return;
     positionHoverPreview(e);
   }
 
   function positionHoverPreview(e) {
-    const gap = 16;           // 鼠标与预览框的间距
+    const gap = 16; // 鼠标与预览框的间距
     const pw = hoverPreview.offsetWidth;
     const ph = hoverPreview.offsetHeight;
     const vw = window.innerWidth;
@@ -595,6 +626,7 @@
     window.removeEventListener("mouseup", handleMouseUp);
     window.removeEventListener("touchmove", handleModalTouchMove);
     window.removeEventListener("touchend", handleModalTouchEnd);
+    window.removeEventListener("touchcancel", handleModalTouchCancel);
   }
 
   function resetModalZoom() {
@@ -614,7 +646,11 @@
   }
 
   function clampTranslate() {
-    if (modalScale <= 1) { modalTx = 0; modalTy = 0; return; }
+    if (modalScale <= 1) {
+      modalTx = 0;
+      modalTy = 0;
+      return;
+    }
     const rect = modalImg.getBoundingClientRect();
     const imgW = rect.width / modalScale;
     const imgH = rect.height / modalScale;
@@ -663,7 +699,9 @@
   function handleMouseUp() {
     isDragging = false;
     modalImg.style.cursor = modalScale > 1 ? "grab" : "";
-    setTimeout(() => { dragMoved = false; }, 100);
+    setTimeout(() => {
+      dragMoved = false;
+    }, 100);
     window.removeEventListener("mousemove", handleMouseMove);
     window.removeEventListener("mouseup", handleMouseUp);
   }
@@ -688,6 +726,7 @@
         isDragging = false;
         window.removeEventListener("touchmove", handleModalTouchMove);
         window.removeEventListener("touchend", handleModalTouchEnd);
+        window.removeEventListener("touchcancel", handleModalTouchCancel);
       }
     } else if (e.touches.length === 1 && !isPinching) {
       const touch = e.touches[0];
@@ -702,12 +741,18 @@
         dragStartY = touch.clientY;
         dragBaseTx = modalTx;
         dragBaseTy = modalTy;
-        window.addEventListener("touchmove", handleModalTouchMove, { passive: false });
+        window.addEventListener("touchmove", handleModalTouchMove, {
+          passive: false,
+        });
         window.addEventListener("touchend", handleModalTouchEnd);
+        window.addEventListener("touchcancel", handleModalTouchCancel);
       }, 300);
-      // 单指也绑 touchmove/touchend 处理双指中途加入的情况
-      window.addEventListener("touchmove", handleModalTouchMove, { passive: false });
+      // 单指也绑 touchmove/touchend/touchcancel，确保任何情况下都能清理
+      window.addEventListener("touchmove", handleModalTouchMove, {
+        passive: false,
+      });
       window.addEventListener("touchend", handleModalTouchEnd);
+      window.addEventListener("touchcancel", handleModalTouchCancel);
     }
   }
 
@@ -752,7 +797,19 @@
       dragMoved = false;
       window.removeEventListener("touchmove", handleModalTouchMove);
       window.removeEventListener("touchend", handleModalTouchEnd);
+      window.removeEventListener("touchcancel", handleModalTouchCancel);
     }
+  }
+
+  // 触摸被系统取消（如系统通知弹出）时清理 window 级监听器
+  function handleModalTouchCancel() {
+    clearTimeout(longPressTimer);
+    isDragging = false;
+    dragMoved = false;
+    isPinching = false;
+    window.removeEventListener("touchmove", handleModalTouchMove);
+    window.removeEventListener("touchend", handleModalTouchEnd);
+    window.removeEventListener("touchcancel", handleModalTouchCancel);
   }
 
   // ============ 启动 ============
