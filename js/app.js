@@ -100,7 +100,7 @@
   function bindEvents() {
     btnNewTask.addEventListener("click", createTask);
     btnExport.addEventListener("click", exportPdf);
-    btnDeleteTask.addEventListener("click", deleteTask);
+    btnDeleteTask.addEventListener("click", () => deleteTask());
 
     // 任务名修改
     taskNameInput.addEventListener("input", () => {
