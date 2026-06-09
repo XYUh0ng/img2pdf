@@ -442,6 +442,9 @@
 
     sortableInstance = new Sortable(imageGrid, {
       animation: 200,
+      delay: 50,
+      delayOnTouchOnly: true,
+      touchStartThreshold: 20,
       ghostClass: "sortable-ghost",
       chosenClass: "sortable-chosen",
       onUpdate() {
@@ -479,6 +482,9 @@
     if (taskListSortable) taskListSortable.destroy();
     taskListSortable = new Sortable(taskListEl, {
       animation: 200,
+      delay: 50,
+      delayOnTouchOnly: true,
+      touchStartThreshold: 20,
       ghostClass: "sortable-ghost",
       chosenClass: "sortable-chosen",
       // 用 onUpdate 代替 onEnd：移动端 onEnd 在动画结束后才触发，
