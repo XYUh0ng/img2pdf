@@ -19,6 +19,7 @@
 - **详细页删除按钮不生效**：deleteTask 直接作为 click 回调时 MouseEvent 被当作 taskId 传入，改为箭头函数包裹
 - **弹窗关闭按钮被遮挡**：拖拽图片后 modal-close 缺少 z-index 被图片覆盖
 - **移除背景点击关闭**：防止移动端点击穿透导致误触背景元素
+- **移动端拖拽阻塞滚动**：SortableJS 添加 delay: 50 + touchStartThreshold: 20，图片铺满屏幕时可正常上下滑动
 
 ## v1.3.2 (2026-06-02)
 
