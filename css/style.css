@@ -338,6 +338,7 @@ body {
   position: absolute;
   top: 16px;
   right: 24px;
+  z-index: 1;
   background: rgba(255, 255, 255, 0.15);
   border: none;
   color: #fff;
@@ -353,6 +354,52 @@ body {
 
 .modal-close:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+/* ----- 弹窗底部工具栏 ----- */
+.modal-toolbar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+  z-index: 1;
+  touch-action: manipulation;
+}
+
+.modal-page-info {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 15px;
+  min-width: 60px;
+  text-align: center;
+  user-select: none;
+}
+
+.modal-toolbar-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.modal-toolbar-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.modal-toolbar-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
 }
 
 /* ========== 开关 ========== */
@@ -667,4 +714,40 @@ body {
     font-size: 28px;
     line-height: 40px;
   }
+
+  .modal-toolbar {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .modal-toolbar-btn {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  .modal-page-info {
+    font-size: 14px;
+  }
+}
+
+/* ========== Toast 提示 ========== */
+.toast {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.toast-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
